@@ -12,6 +12,7 @@ class  Person(models.Model):
     contact_no = models.CharField(max_length=10,verbose_name="Contact Number")
     address  = models.TextField(max_length=70,verbose_name="Address")
     joined_date = models.DateTimeField(default=timezone.now,editable=False)
+    photo = models.ImageField(height_field=250,width_field=195)
 
     def __str__(self):
         first_name = self.first_name
@@ -78,7 +79,6 @@ class Court(models.Model):
 class Criminal(Person):
         criminal_id = models.AutoField(primary_key=True)
         status = models.CharField(max_length=15)
-        photo = models.ImageField()
         height = models.FloatField()
         weight = models.FloatField()
         complexion = models.CharField(max_length=15)
@@ -99,17 +99,33 @@ class Punishment(models.Model):
 
 
 
-class Crimes(models.Model):
+class FIR(models.Model):
+    CRIME_CHOICES = [
+    ('MUR', 'Murder'),
+    ('KID', 'Kidnapping'),
+    ('TFT', 'Theft'),
+    ('RAP', 'Rape'),
+    ('ACC', 'Accident'),
+    ('VOL', 'Voilence'),
+]
+    FIR_STATUS = [
+        ('CL',"Closed"),
+        ('OP','Open')
+    ]
+    crime_place = models.CharField(max_length=30)
+    crime_type = models.CharField(max_length=3,choices=CRIME_CHOICES,default='TFT')
+    date = models.DateTimeField(verbose_name="Crime date and Time",default=timezone.now)
+    description = models.CharField(verbose_name="Crime description",max_length=1000)
+    victim_name = models.CharField(verbose_name="Victim Name",null=True,max_length=30)
+    repoter_name = models.CharField(verbose_name="Reporter name",null=False,max_length=30)
+    reporter_photo = models.ImageField(verbose_name="Reporter Photo",height_field=250,width_field=195)
+    repoter_phone_number = models.CharField(verbose_name="Reporter Contact No.",max_length=10)
+    fir_status = models.CharField(max_length=2,choices=FIR_STATUS,default='OP')
     criminal = models.ForeignKey(Criminal,on_delete=models.RESTRICT)
-    punisment = models.ForeignKey(Punishment,on_delete=models.RESTRICT)
-    crime_name = models.CharField(max_length=20)
-    date_time = models.DateTimeField()
-    reported_by = models.CharField(max_length=30)
-    place = models.CharField(max_length=30)
-    description = models.TextField()
+    punishment = models.ForeignKey(Punishment,on_delete=models.PROTECT)
 
-    def __str__(self):
-        return self.crime_name
+    def __str__(self) -> str:
+        return self.crime_type
 
 
 
