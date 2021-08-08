@@ -1,7 +1,10 @@
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.core.files import storage
+from django.core.files.storage import FileSystemStorage
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
+
+
 
 class  Person(models.Model):
     first_name = models.CharField(max_length=15,db_index=True,verbose_name="First Name")
@@ -11,14 +14,12 @@ class  Person(models.Model):
     gender = models.CharField(choices=[("M","Male"),("F","Female"),("O","Other")],max_length=1)
     contact_no = models.CharField(max_length=10,verbose_name="Contact Number")
     address  = models.TextField(max_length=70,verbose_name="Address")
-    joined_date = models.DateTimeField(default=timezone.now,editable=False)
-    photo = models.ImageField(height_field=250,width_field=195)
+    joining_date = models.DateField(default=timezone.now,editable=False)
+    photo = models.ImageField(upload_to='images/')
 
-    def __str__(self):
-        first_name = self.first_name
-        middle_name = " "+self.middle_name+" " if self.middle_name != "" else " "
-        last_name = self.last_name
-        return first_name+middle_name+last_name
+    def __str__(self) -> str:
+        return f"{self.first_name} "+f"{self.middle_name} "+f"{self.last_name}"
+
     class Meta:
         abstract = True
 
@@ -46,7 +47,7 @@ class Cell(models.Model):
     jail = models.ForeignKey(Jail,on_delete=models.CASCADE,null=True)
 
     def __str__(self):
-        return self.cell_number
+        return str(self.cell_number)
 
 class Police(Person):
     police_id = models.AutoField(primary_key=True)
@@ -85,8 +86,9 @@ class Criminal(Person):
         hair_color = models.CharField(max_length=15)
         birth_mark = models.CharField(max_length=30,null=True)
         eye_color = models.CharField(max_length=15)
-        court = models.ForeignKey(Court,on_delete=models.RESTRICT,null=True)
-        cell = models.ForeignKey(Cell,on_delete=models.SET_NULL,null=True)
+        court = models.ForeignKey(Court,on_delete=models.RESTRICT,null=True,blank=True)
+        cell = models.ForeignKey(Cell,on_delete=models.SET_NULL,null=True,blank=True)
+
 
 class Punishment(models.Model):
     punishment_id = models.AutoField(primary_key=True)
@@ -114,18 +116,22 @@ class FIR(models.Model):
     ]
     crime_place = models.CharField(max_length=30)
     crime_type = models.CharField(max_length=3,choices=CRIME_CHOICES,default='TFT')
-    date = models.DateTimeField(verbose_name="Crime date and Time",default=timezone.now)
+    crime_dateTime = models.DateTimeField(verbose_name="Crime date and Time",default=timezone.now)
+    fir_dateTime = models.DateTimeField(verbose_name="Fir date and Time",default=timezone.now,editable=False)
     description = models.CharField(verbose_name="Crime description",max_length=1000)
-    victim_name = models.CharField(verbose_name="Victim Name",null=True,max_length=30)
-    repoter_name = models.CharField(verbose_name="Reporter name",null=False,max_length=30)
-    reporter_photo = models.ImageField(verbose_name="Reporter Photo",height_field=250,width_field=195)
+    victim_name = models.CharField(verbose_name="Victim Name",blank=True,max_length=30)
+    reporter_name = models.CharField(verbose_name="Reporter name",null=False,max_length=30)
+    reporter_photo = models.ImageField(verbose_name="Reporter Photo",upload_to='images/',blank=True)
     repoter_phone_number = models.CharField(verbose_name="Reporter Contact No.",max_length=10)
     fir_status = models.CharField(max_length=2,choices=FIR_STATUS,default='OP')
-    criminal = models.ForeignKey(Criminal,on_delete=models.RESTRICT)
-    punishment = models.ForeignKey(Punishment,on_delete=models.PROTECT)
+    criminal = models.ForeignKey(Criminal,on_delete=models.PROTECT,blank=True,null=True,related_name = "firOf")
+    punishment = models.ForeignKey(Punishment,on_delete=models.PROTECT,blank=True,null=True)
 
-    def __str__(self) -> str:
-        return self.crime_type
+    def save(self,*args,**kwargs):
+        self.fir_dateTime = timezone.now()
+        super(FIR,self).save(*args,**kwargs)
+    def __str__(self):
+        return "Reported By "+self.reporter_name
 
 
 

@@ -1,9 +1,8 @@
-from .serializer import CriminalSerializer, LoginSerializer, PoliceSerializer
-from django.shortcuts import render
+from .serializer import CriminalSerializer, FirSerializer, LoginSerializer, PoliceSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Criminal, Police
+from .models import Criminal, FIR, Police
 
 
 # from CRMS_API import serializer
@@ -27,8 +26,8 @@ class Authenticate(APIView):
         if serializer.is_valid():
             police  = Police.objects.get(email = serializer.data.get("email"))
             if police is not None and police.password == serializer.data.get("password"):
-                return Response(status=status.HTTP_201_CREATED,data=PoliceSerializer(police).data)
-            return Response(status=status.HTTP_201_CREATED,data="Invalid credentials")
+                return Response(status=status.HTTP_202_ACCEPTED,data=PoliceSerializer(police).data)
+            return Response(status=status.HTTP_401_UNAUTHORIZED,data="Invalid credentials")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class SearchCriminal(APIView):
@@ -37,12 +36,24 @@ class SearchCriminal(APIView):
         if(format=='simple'):
             query = request.query_params.get("name")
             search_results = Criminal.objects.filter(first_name__icontains = query)
-            return Response(data = CriminalSerializer(search_results,many=True).data)
+            return Response(data = CriminalSerializer(search_results,many=True,context={'request':request}).data)
         return Response(status=200)
 
-class AddFir(APIView):
-    def post(self,request):
-        return Response()
+class Fir(APIView):
+    def post(self, request):
+        serialized_fir = FirSerializer(data=request.data,context={'request': request})
+        if serialized_fir.is_valid():
+            serialized_fir.save()
+            return Response(status=status.HTTP_201_CREATED,data="Successfull created")
+        return Response(serialized_fir.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def get(self,request):
+        query = request.query_params.get("criminal_id")
+        criminal = Criminal.objects.get(criminal_id=query)
+        firs = criminal.firOf.all()
+        print(firs)
+        return Response(data = FirSerializer(firs,many=True,context={'request':request}).data)
+
 
 
 
