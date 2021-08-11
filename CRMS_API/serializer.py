@@ -9,8 +9,15 @@ class PoliceStationSerializer(serializers.ModelSerializer):
         fields = ("station_name","address")
 
 
+
 class PoliceSerializer(serializers.ModelSerializer):
 
+    class Meta:
+        model = Police
+        fields="__all__"
+
+
+class PoliceGetSerializer(serializers.ModelSerializer):
     police_station = PoliceStationSerializer()
     class Meta:
         model = Police
@@ -19,9 +26,6 @@ class PoliceSerializer(serializers.ModelSerializer):
         'gender','contact_no','address',
         'joining_date','photo','police_id','username','email'
         ,'post','police_station')
-
-
-
 
 class CriminalSerializer(serializers.ModelSerializer):
     class Meta:
@@ -38,3 +42,9 @@ class FirSerializer(serializers.ModelSerializer):
     class Meta:
         model = FIR
         fields = '__all__'
+
+
+class PoliceStationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PoliceStation
+        fields = "__all__"

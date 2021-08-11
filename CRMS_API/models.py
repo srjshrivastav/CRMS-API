@@ -55,7 +55,7 @@ class Police(Person):
     password = models.CharField(verbose_name="Password",max_length=20)
     email = models.EmailField(verbose_name="Email Address",unique=True)
     post = models.CharField(max_length=10,verbose_name="Post",null=False)
-    police_station = models.ForeignKey(PoliceStation,on_delete=models.SET_NULL,null=True)
+    police_station = models.ForeignKey(PoliceStation,on_delete=models.SET_NULL,null=True,blank=True)
     
 
     def has_module_perms(perm_list,obj=None):

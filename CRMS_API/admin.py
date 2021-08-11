@@ -8,6 +8,7 @@ from .models import Police,PoliceStation,Criminal,FIR,Court,Jail,Cell,Punishment
 class FIRAdmin(admin.ModelAdmin):
     list_display = ("crime_type", "crime_place", "fir_dateTime")
     autocomplete_fields =["criminal"]
+    
 @admin.register(Police)
 class PoliceAdmin(admin.ModelAdmin):
     list_display=("first_name","middle_name","last_name","post")

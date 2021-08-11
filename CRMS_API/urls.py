@@ -8,4 +8,5 @@ urlpatterns = [
     path('authenticate',views.Authenticate.as_view()),
     path('search',views.SearchCriminal.as_view(),name="search-criminal"),
     path('fir',views.Fir.as_view(),name="get-or-post-fir"),
+    path('addpolicestation',views.PoliceStation.as_view(),name="get-or-post-fir"),
 ]
